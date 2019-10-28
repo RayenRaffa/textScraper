@@ -24,3 +24,9 @@ print(df.iloc[:10,:])
 df.to_excel(writer)
 writer.save()
 writer.close()
+
+sample_writer = ExcelWriter(data_dir+'sampleMachinesAndPlants.xlsx')
+sample_df = df.iloc[0:500,:]
+sample_df.to_excel(sample_writer)
+sample_writer.save()
+sample_writer.close()
