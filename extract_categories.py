@@ -11,18 +11,21 @@ base_url = 'https://dir.indiamart.com'
 final_output = './out/'
 # industry = final_output + 'Industrial Plants and Machineries/'
 
-industries = ['/industry/packaging-material.html']
-
+industries = pd.DataFrame({'Name':['Test industry'],'URL':['/industry/packaging-material.html']})
+print(industries)
 categories = pd.DataFrame(columns={'Name', 'URL'})
+print(industries.loc[:,'URL'])
 
 def ExtractCategories(industries,categories):
     
-    for industry in industries:
+    for industry in industries.loc[:,'URL']:
 	    try:
+	    	print(industry)
 	    	industry_page = urllib.request.urlopen(base_url + industry)
 	    	industry_soup = BeautifulSoup(industry_page, 'html.parser')
 	    	categories_box = industry_soup.find('div', attrs={'class': 'mid'})
 	    	industry_name = categories_box.find('h1').getText().strip()
+	    	print(industry_name)
 	    	industry_path = final_output + industry_name
 	    except Exception as e:
 	    	industry_name = industry[1:].split('.')[0]
@@ -65,6 +68,6 @@ def ExtractCategories(industries,categories):
 
 
 
-categories = ExtractCategories(industries, categories)
+categories = ExtractCategories(industries,categories)
 print(f"Found {len(categories.index)} categories")
 print(categories)
