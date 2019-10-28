@@ -13,9 +13,10 @@ final_output = './out/'
 
 industries = ['/industry/packaging-material.html']
 
+categories = pd.DataFrame(columns={'Name', 'URL'})
 
-def ExtractCategories(industries):
-    categories = pd.DataFrame(columns={'Name', 'URL'})
+def ExtractCategories(industries,categories):
+    
     for industry in industries:
 	    try:
 	    	industry_page = urllib.request.urlopen(base_url + industry)
@@ -64,6 +65,6 @@ def ExtractCategories(industries):
 
 
 
-categories = ExtractCategories(industries)
+categories = ExtractCategories(industries, categories)
 print(f"Found {len(categories.index)} categories")
 print(categories)
