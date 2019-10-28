@@ -28,7 +28,10 @@ def ExtractIndustries(base_url=base_url):
     if (industries_loc):
     	industries_list = industries_loc.find_all('div')
     	print(f"Found {len(industries_list)} : Collecting URLs ...")
-    	for in
+    	for industry in industries_list:
+    		try:
+    			industy_link = industry.find('a',href=True)
+    			industry_name = industry.find('div',attrs={'class':'catHd'}).getText().strip()
 
 
     return industries
