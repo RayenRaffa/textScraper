@@ -13,30 +13,34 @@ final_output = './out/'
 
 industries = pd.DataFrame({'Name':['Test industry'],'URL':['/industry/packaging-material.html']})
 print(industries)
-categories = pd.DataFrame(columns={'Name', 'URL'})
+
 print(industries.loc[:,'URL'])
 
-def ExtractCategories(industries,categories):
-    
+def ExtractCategories(industries,categories=None):
+    categories = pd.DataFrame(columns={'Name', 'URL'})    
     for industry in industries.loc[:,'URL']:
+	    
 	    try:
 	    	print(industry)
 	    	industry_page = urllib.request.urlopen(base_url + industry)
 	    	industry_soup = BeautifulSoup(industry_page, 'html.parser')
-	    	categories_box = industry_soup.find('div', attrs={'class': 'mid'})
+	    	categories_box = industry_soup.find('div', attrs={'class': 'mid'})    	
+	    except Exception as e:
+    		print(f"!!!!!! Error fetching categories from {industry} : {e}")
+    		categories_box = None
+	    
+
+	    try:
 	    	industry_name = categories_box.find('h1').getText().strip()
 	    	print(industry_name)
-	    	industry_path = final_output + industry_name
 	    except Exception as e:
+	    	print(f"Warning : Could not get Category name")
 	    	industry_name = industry[1:].split('.')[0]
-	    	industry_path = final_output + industry_name
-	    	if (categories_box):
-	    		print(
-	    		    f"Warning could not fetch industry name from {industry_name} : {e}")
-	    	else:
-	    		print(f"!!!!!! Error fetching categories from {industry_name} : {e}")
-	    		categories_box = None
+
+	    industry_path = final_output + industry_name
+
 	    if not os.path.exists(industry_path):
+	    	print(f"Creating directory for : {industry_name} ...")
     		os.makedirs(industry_path)
 
 	    if (categories_box):
@@ -63,11 +67,11 @@ def ExtractCategories(industries,categories):
     					categories = categories.append(new_cat, ignore_index=True)
     				except Exception as e:
     					print(f"Error fetching category url from cat_tag : SKIPPING : {e}")
+    print(f"Found {len(categories.index)} categories")
+    print(categories.iloc[:10,:])
 
     return categories
 
 
-
+categories = pd.DataFrame(columns={'Name', 'URL'})
 categories = ExtractCategories(industries,categories)
-print(f"Found {len(categories.index)} categories")
-print(categories)
