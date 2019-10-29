@@ -1,3 +1,4 @@
+import sys
 import os
 import pandas as pd
 from pandas import ExcelWriter
@@ -6,8 +7,18 @@ from pandas import ExcelFile
 data_dir = './out/'
 
 def PostProcess(data_dir='./out/'):
-    agg_data_df = pd.DataFrame(columns=['Name', 'URL', 'Phone', 'Address', 'Category','Industry'])
+
+    log_dir = './Logs/'
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
     print("Scanning files ...")
+
+    old_stdout = sys.stdout
+    log_file = open(log_dir+"postProcess.log","w")
+    sys.stdout = log_file
+
+    agg_data_df = pd.DataFrame(columns=['Name', 'URL', 'Phone', 'Address', 'Category','Industry'])
     for root, dirs, files in os.walk(data_dir):
             for name in files:
                 file_name = os.path.join(root,name)
@@ -37,7 +48,13 @@ def PostProcess(data_dir='./out/'):
     sample_df.to_excel(sample_writer)
     sample_writer.save()
     sample_writer.close()
+    sys.stdout = old_stdout
+    log_file.close()
+
+
+    print(f"Found {len(agg_data_df.index)} distinct URLs")
     print("PostProcess : DONE.")
+    
     return 0
 
 PostProcess()

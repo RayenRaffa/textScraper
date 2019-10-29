@@ -1,3 +1,4 @@
+import sys
 import re
 import os
 import pandas as pd
@@ -16,7 +17,17 @@ print(industries)
 print(industries.loc[:,'URL'])
 
 def ExtractCategories(industries,categories):
-        
+
+
+    log_dir = './Logs/'
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+
+    old_stdout = sys.stdout
+    log_file = open(log_dir+"extractCategories.log","w")
+    sys.stdout = log_file
+
     for i in range(len(industries.index)):
         row = industries.iloc[i]
         industry = row['URL']
@@ -60,8 +71,14 @@ def ExtractCategories(industries,categories):
                         print(f"Error fetching category url from cat_tag : SKIPPING : {e}")
     print(f"\nDONE : Found {len(categories.index)} categories\n")
     print(categories.iloc[:10,:])
+    
+    sys.stdout = old_stdout
+    log_file.close()
+
+    print(f"\nDONE : Found {len(categories.index)} categories\n")
 
     return categories
+
 
 
 categories = pd.DataFrame(columns={'Name', 'URL','Industry'})

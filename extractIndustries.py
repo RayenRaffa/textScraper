@@ -1,3 +1,4 @@
+import sys
 import re
 import os
 import pandas as pd
@@ -12,6 +13,14 @@ final_output = './out/'
 
 
 def ExtractIndustries(base_url=base_url):
+
+	log_dir = './Logs/'
+	if not os.path.exists(log_dir):
+		os.makedirs(log_dir)
+
+	old_stdout = sys.stdout
+	log_file = open(log_dir+"extractIndustries.log","w")
+	sys.stdout = log_file
 
 	industries = pd.DataFrame(columns=['Name','URL'])
 	try:
@@ -43,6 +52,12 @@ def ExtractIndustries(base_url=base_url):
 				new_indus = pd.DataFrame({"Name":[industry_name], "URL":[industry_url]})
 				print(new_indus)
 				industries = industries.append(new_indus, ignore_index=True)
+
+	sys.stdout = old_stdout
+	log_file.close()
+	
+	print(f"\nDONE : Found {len(industries.index)} industries")
+	
 
 	return industries
 
