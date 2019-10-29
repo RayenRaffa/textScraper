@@ -48,5 +48,5 @@ def ExtractIndustries(base_url=base_url):
 	return industries
 
 industries = ExtractIndustries()
-print(f"Found {len(industries.index)} industries")
+print(f"\nDONE : Found {len(industries.index)} industries")
 print(industries.iloc[:10,:])

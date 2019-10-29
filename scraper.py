@@ -15,12 +15,14 @@ final_output = './out/'
 
 def scrape(base_url=base_url):
 
-    industries = ExtractIndustries(base_url)
-    categories = ExtractCategories(industries)
-    print(f"Found {len(categories.index)} categories TOTAL !")
-    print(categories.iloc[:10,:])
+	industries = pd.DataFrame(columns={'Name', 'URL'})
+	categories = pd.DataFrame(columns={'Name', 'URL','Industry'})
+	industries = ExtractIndustries(base_url)
+	categories = ExtractCategories(industries,categories)
+	print(f"\nFound {len(categories.index)} categories TOTAL !")
+	print(categories.iloc[:10,:])
 
-    return categories
+	return categories
 
 
 
