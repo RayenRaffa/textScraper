@@ -4,7 +4,6 @@ import pandas as pd
 from pandas import ExcelWriter
 import urllib.request
 from bs4 import BeautifulSoup
-from extract_products import ExtractProducts
 
 # URL to be scraped
 base_url = 'https://dir.indiamart.com'
