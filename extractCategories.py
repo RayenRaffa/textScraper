@@ -11,7 +11,9 @@ base_url = 'https://dir.indiamart.com'
 final_output = './out/'
 # industry = final_output + 'Industrial Plants and Machineries/'
 
-
+industries = pd.DataFrame({'Name':['Test industry'],'URL':['https://dir.indiamart.com/industry/packaging-material.html']})
+print(industries)
+print(industries.loc[:,'URL'])
 
 def ExtractCategories(industries,categories):
         
@@ -61,9 +63,7 @@ def ExtractCategories(industries,categories):
 
     return categories
 
-industries = pd.DataFrame({'Name':['Test industry'],'URL':['https://dir.indiamart.com/industry/packaging-material.html']})
-print(industries)
-print(industries.loc[:,'URL'])
+
 categories = pd.DataFrame(columns={'Name', 'URL','Industry'})
 categories = ExtractCategories(industries,categories)
 
