@@ -10,16 +10,15 @@ from bs4 import BeautifulSoup
 base_url = 'https://dir.indiamart.com'
 
 
-def ExtractProducts(sellers,categories, base_url=base_url, output='./out/'):
+def ExtractProducts(base_url,categories, out_dir='./out/',log_dir=None):
 
 
-    log_dir = './Logs/'
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-
-    old_stdout = sys.stdout
-    log_file = open(log_dir+"extractProducts.log","w")
-    sys.stdout = log_file
+    if(log_dir):
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+        old_stdout = sys.stdout
+        log_file = open(log_dir+"extractProducts.log","w")
+        sys.stdout = log_file
 
 
     per_indus_count = 0
@@ -31,7 +30,7 @@ def ExtractProducts(sellers,categories, base_url=base_url, output='./out/'):
         category = row['URL']
         category_name = row['Name']
         category_s_industry = row['Industry']
-        out_dir = output + category_s_industry + '/' + category_name + '/'
+        out_dir = out_dir + c,log_dir=Noneategory_s_industry + '/' + category_name + '/'
         out_dir_exists = False
         try:
             category_page = urllib.request.urlopen(base_url + category)
@@ -50,6 +49,7 @@ def ExtractProducts(sellers,categories, base_url=base_url, output='./out/'):
             	print(f"============= Error fetching products from {category} ... Skipping")
             	products = []
 
+            sellers = extractSellers(base_url,products)
         	# for c in products: # Production loop
             for c in [products[0]]: # Testing : fetch one seller from each product page
                 query = c['href']
