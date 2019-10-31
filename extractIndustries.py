@@ -15,7 +15,7 @@ def ExtractIndustries(base_url,out_dir='./out',log_dir=None):
 		if not os.path.exists(log_dir):
 			os.makedirs(log_dir)
 		old_stdout = sys.stdout
-		log_file = open(os.path.abspath(log_dir)+"/extractIndustries.log","w")
+		log_file = open(os.path.abspath(log_dir)+"/extractIndustries.log","a")
 		sys.stdout = log_file
 
 	industries = pd.DataFrame(columns=['Name','URL'])
@@ -46,14 +46,17 @@ def ExtractIndustries(base_url,out_dir='./out',log_dir=None):
 				else:
 					print(f"Error fetching industry URL : {e} : SKIPPING ...")
 
+
+	industries.sort_values('Name',inplace=True)
+	industries.drop_duplicates('URL', inplace=True)
 	try:
 		if not os.path.exists(out_dir):
 			os.makedirs(out_dir)
-		writer = ExcelWriter(os.path.abspath(out_dir) + '/industries.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
-		industries.to_excel(writer)
+		writer = ExcelWriter(os.path.abspath(out_dir) + '/all_industries.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
+		industries.to_excel(writer, startrow = writer.sheets['Sheet1'].max_row, index=False)
 		writer.save()
 		writer.close()
-		print(f"\nSaved Industries data at {os.path.dirname(out_dir)}/industries.xlsx")
+		print(f"\nSaved Industries data at {os.path.dirname(out_dir)}/all_industries.xlsx")
 	except Exception as e:
 		print(industries)
 		print(f"{e} \nPlease remove {os.path.dirname(out_dir)} or provide another out_dir")

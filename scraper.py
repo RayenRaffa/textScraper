@@ -5,17 +5,19 @@ import pandas as pd
 from pandas import ExcelWriter
 import urllib.request
 from bs4 import BeautifulSoup
+from extractVendors import ExtractVendors
 from extractProducts import ExtractProducts
 from extractCategories import ExtractCategories
 from extractIndustries import ExtractIndustries
 from postProcess import PostProcess
-# URL to be scraped
+
+
+
 base_url = 'https://dir.indiamart.com'
-final_output = './out/'
-# industry = final_output + 'Industrial Plants and Machineries/'
+final_output = './out'
 
 
-def scrape(sellers, categories, indusries, base_url=base_url):
+def scrape(base_url,out_dir='./out',log_dir=None):
 
     industries = ExtractIndustries(base_url)
     categories = ExtractCategories(industries,categories)
@@ -27,8 +29,8 @@ def scrape(sellers, categories, indusries, base_url=base_url):
     return sellers, categories, industries
 
 
-categories = pd.DataFrame(columns={'Name', 'URL','Industry'})
-industries = pd.DataFrame(columns={'Name', 'URL'})
-sellers = pd.DataFrame(columns=['Name', 'URL', 'Phone', 'Address','Category','Industry'])
-sellers, categories, industries =  scrape(sellers, categories, industries)
-PostProcess()
+# categories = pd.DataFrame(columns={'Name', 'URL','Industry'})
+# industries = pd.DataFrame(columns={'Name', 'URL'})
+# sellers = pd.DataFrame(columns=['Name', 'URL', 'Phone', 'Address','Category','Industry'])
+# sellers, categories, industries =  scrape(sellers, categories, industries)
+# PostProcess()

@@ -5,7 +5,9 @@ import pandas as pd
 from pandas import ExcelWriter
 import urllib.request
 from bs4 import BeautifulSoup
-from extractIndustries import ExtractIndustries
+
+
+
 
 
 def ExtractCategories(base_url,industry,out_dir='./out',log_dir=None):
@@ -15,7 +17,7 @@ def ExtractCategories(base_url,industry,out_dir='./out',log_dir=None):
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
         old_stdout = sys.stdout
-        log_file = open(log_dir+"extractCategories.log","w")
+        log_file = open(log_dir+"extractCategories.log","a")
         sys.stdout = log_file
 
     categories = pd.DataFrame(columns=["Name","URL","Industry"])
@@ -54,25 +56,29 @@ def ExtractCategories(base_url,industry,out_dir='./out',log_dir=None):
                 try:
                     cat_tag = cat.find('a', href=True)
                     cat_name = cat_tag.getText().strip()
-                    cat_url = cat_tag['href']
+                    cat_url = base_url+cat_tag['href']
                     print(f"Found category {cat_name} : appending ...")
                     categories = categories.append({"Name":cat_name, "URL":cat_url,"Industry":industry_name}, ignore_index=True)
                 except Exception as e:
                     print(f"Error fetching category url from cat_tag : SKIPPING : {e}")
+    
+
+    categories.sort_values('Name',inplace=True)
+    categories.drop_duplicates('URL', inplace=True)
+
     print(f"\nDONE : Collected {len(categories.index)} categories from {industry_name}\n")
     print(categories.iloc[:10,:])
     
-
-
     industry_dir = os.path.abspath(out_dir)+'/'+industry_name
+    
     try:
         if not os.path.exists(industry_dir):
             os.makedirs(industry_dir)
-        writer = ExcelWriter(os.path.abspath(industry_dir) + '/categories.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
-        categories.to_excel(writer, index=False)
+        writer = ExcelWriter(industry_dir + '/categories.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
+        categories.to_excel(writer,startrow = writer.sheets['Sheet1'].max_row, index=False)
         writer.save()
         writer.close()
-        print(f"\nSaved Categories of {industry_name} data at {os.path.dirname(industry_dir).split('/')[-1]}/{industry_name}/categories.xlsx")
+        print(f"\nSaved Categories of {industry_name} data at {out_dir}/{industry_name}/categories.xlsx")
     except Exception as e:
         print(categories)
         print(f"{e} \nPlease remove {os.path.dirname(out_dir)} or provide another out_dir")
@@ -87,29 +93,29 @@ def ExtractCategories(base_url,industry,out_dir='./out',log_dir=None):
 
 
 
-out_dir = './out'
-base_url = 'https://dir.indiamart.com'
-industries = ExtractIndustries(base_url)
-g_categories = pd.DataFrame(columns=["Name","URL","Industry"])
-for industry in industries.itertuples():
-    # print(industry)
-    categories = ExtractCategories(base_url,industry,out_dir)
-    g_categories = g_categories.append(categories, ignore_index=True)
-    print(f"Collected {len(g_categories.index)} so far ...")
+# out_dir = './out'
+# base_url = 'https://dir.indiamart.com'
+# industries = ExtractIndustries(base_url)
+# g_categories = pd.DataFrame(columns=["Name","URL","Industry"])
+# for industry in industries.itertuples():
+#     # print(industry)
+#     categories = ExtractCategories(base_url,industry,out_dir)
+#     g_categories = g_categories.append(categories, ignore_index=True)
+#     print(f"Collected {len(g_categories.index)} so far ...")
 
-# Creating recap file for all categories
-print(f"Collected {len(g_categories.index)} categories TOTAL !")
-g_categories.sort_values('Name',inplace=True)
-g_categories.drop_duplicates('URL',inplace=True)
-g_categories_final = g_categories[['Name','URL','Industry']]
-print(f"Found {len(g_categories_final.index)} distinct categories")
-try:
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-    writer = ExcelWriter(os.path.abspath(out_dir) + '/categories_all.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
-    g_categories_final.to_excel(writer, index=False)
-    writer.save()
-    writer.close()
-    print(f"\nSaved ALL Categories data at {out_dir}/categories_all.xlsx")
-except Exception as e:
-    print(f"{e} \nPlease remove {out_dir} or provide another out_dir")
+# # Creating recap file for all categories
+# print(f"Collected {len(g_categories.index)} categories TOTAL !")
+# g_categories.sort_values('Name',inplace=True)
+# g_categories.drop_duplicates('URL',inplace=True)
+# g_categories_final = g_categories[['Name','URL','Industry']]
+# print(f"Found {len(g_categories_final.index)} distinct categories")
+# try:
+#     if not os.path.exists(out_dir):
+#         os.makedirs(out_dir)
+#     writer = ExcelWriter(os.path.abspath(out_dir) + '/all_categories.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
+#     g_categories_final.to_excel(writer, startrow = writer.sheets['Sheet1'].max_row, index=False)
+#     writer.save()
+#     writer.close()
+#     print(f"\nSaved ALL Categories data at {out_dir}/all_categories.xlsx")
+# except Exception as e:
+#     print(f"{e} \nPlease remove {out_dir} or provide another out_dir")
