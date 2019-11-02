@@ -23,8 +23,8 @@ def ExtractCategories(base_url,industry,out_dir='./out',log_dir=None):
     categories = pd.DataFrame(columns=["Name","URL","Industry"])
 
 
-    industry_name = industry[1]
-    industry_url = industry[2] # industry is a tuple : [Index, Name, URL]
+    industry_name = industry.Name
+    industry_url = industry.URL # industry is a tuple : [Index, Name, URL]
     print(f"\n\n######## Fetching categories from {industry_name} ...\n\n")
     try:
         industry_page = urllib.request.urlopen(industry_url)
@@ -65,8 +65,6 @@ def ExtractCategories(base_url,industry,out_dir='./out',log_dir=None):
 
     categories.sort_values('Name',inplace=True)
     categories.drop_duplicates('URL', inplace=True)
-
-    categories = categories[['Name','URL','Industry']]
 
     print(f"\nDONE : Collected {len(categories.index)} categories from {industry_name}\n")
     print(categories.iloc[:10,:])

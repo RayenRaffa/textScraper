@@ -18,9 +18,9 @@ def ExtractProducts(base_url, category, out_dir='./out', log_dir=None):
         log_file = open(log_dir + "extractProducts.log", "a")
         sys.stdout = log_file
     print(category)
-    category_name       = category[3]
-    category_url        = category[1]
-    category_s_industry = category[2]  # Tuple = [Index, URL, Industry, Name]
+    category_name       = category.Name
+    category_url        = category.URL
+    category_s_industry = category.Industry # Tuple = [Index, URL, Industry, Name]
     cat_out_dir = out_dir + '/' + category_s_industry + '/' + category_name
     try:
         category_page = urllib.request.urlopen(category_url)
@@ -98,7 +98,6 @@ def ExtractProducts(base_url, category, out_dir='./out', log_dir=None):
         writer = ExcelWriter(cat_out_dir + '/subCategories.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
         subCategories.sort_values('Name',inplace=True)
         subCategories.drop_duplicates('URL',inplace=True)
-        subCategories = subCategories[['Name','URL','Category','Industry']]
         subCategories.to_excel(writer, index=False)
         writer.save()
         writer.close()
@@ -109,7 +108,6 @@ def ExtractProducts(base_url, category, out_dir='./out', log_dir=None):
         products = products.append(subCategories, ignore_index=True, sort=False)
         products.sort_values('Name',inplace=True)
         products.drop_duplicates('URL',inplace=True)
-        products = products[['Name','URL','subCategory','Category','Industry']]
         products.to_excel(writer, index=False)
         writer.save()
         writer.close()

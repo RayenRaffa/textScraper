@@ -16,11 +16,11 @@ def ExtractVendors(base_url,product,out_dir='./out',log_dir=None):
         old_stdout = sys.stdout
         sys.stdout = log_file
 
-    prod_name   = product[1] # Product is a tuple : [Index, Name, URL, subCategory, Category, Industry]
-    prod_url    = product[2]
-    prod_subCat = product[3]
-    prod_cat    = product[4]
-    prod_indus  = product[5]
+    prod_name   = product.Name # Product is a tuple : [Index, Name, URL, subCategory, Category, Industry]
+    prod_url    = product.URL
+    prod_subCat = product.subCategory
+    prod_cat    = product.Category
+    prod_indus  = product.Industry
 
     # Query the URL for its html
     prod_page = urllib.request.urlopen(prod_url)
@@ -61,7 +61,6 @@ def ExtractVendors(base_url,product,out_dir='./out',log_dir=None):
     if (len(vendors.index) > 0):
         vendors.sort_values('Name', inplace=True)
         vendors.drop_duplicates('URL', inplace=True)
-        vendors = vendors[['Name','URL','Phone','Address','Category','Industry']]
         print(f'\nFound : {len(vendors.index)}  vendors in {prod_name} .. creating file ...\n')
         prod_out_dir = out_dir + '/' + prod_indus + '/' + prod_cat + '/' + prod_subCat
         vendors_file = prod_out_dir + '/vendors_' + prod_name + '.xlsx'
