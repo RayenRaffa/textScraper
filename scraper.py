@@ -19,16 +19,21 @@ def scrape(base_url,out_dir='./out',log_dir=None):
 
     industries = ExtractIndustries(base_url)
     for industry in industries.itertuples():
-            categories = ExtractCategories(base_url, industry)
-            break
+        categories = ExtractCategories(base_url, industry)
     for category in categories.itertuples():
-            products   = ExtractProducts(base_url, category)
-            break
+        products   = ExtractProducts(base_url, category)
+
+    prod_found = len(products.index)
+    print(f"##########\n#########\n\
+        Found {prod_found} products TOTAL\n\
+        Fetching vendors ...\n\
+        ##############\n\
+        ##############\n")
+    i=1
     for product in products.itertuples():
-            vendors    = ExtractVendors(base_url, product)
-            break # Testing : run the loop once only
-
-
+        vendors    = ExtractVendors(base_url, product)
+        print(f'~~~~~~~~~~\n{i*100/prod_found}\n~~~~~~~~~~~~~~\n')
+        i += 1
     return 0
 
 
