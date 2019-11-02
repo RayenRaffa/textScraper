@@ -98,6 +98,7 @@ def ExtractProducts(base_url, category, out_dir='./out', log_dir=None):
         writer = ExcelWriter(cat_out_dir + '/subCategories.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
         subCategories.sort_values('Name',inplace=True)
         subCategories.drop_duplicates('URL',inplace=True)
+        subCategories = subCategories[['Name','URL','Category','Industry']]
         subCategories.to_excel(writer, index=False)
         writer.save()
         writer.close()
@@ -108,6 +109,7 @@ def ExtractProducts(base_url, category, out_dir='./out', log_dir=None):
         products = products.append(subCategories, ignore_index=True, sort=False)
         products.sort_values('Name',inplace=True)
         products.drop_duplicates('URL',inplace=True)
+        products = products[['Name','URL','subCategory','Category','Industry']]
         products.to_excel(writer, index=False)
         writer.save()
         writer.close()
