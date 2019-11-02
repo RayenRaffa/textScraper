@@ -42,6 +42,17 @@ def scrape(base_url,out_dir='./out',log_dir=None):
         g_vendors = g_vendors.append(products,ignore_index=True,sort=False)
         print(f'\n\n@@@@@@@@@@@@@\n{i*100/prod_found}% of products scanned\n@@@@@@@@@@@@@@@\n\n')
         i += 1
+
+
+    writer = ExcelWriter(out_dir + '/all_vendors.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
+    g_vendors.sort_values('Name',inplace=True)
+    g_vendors.drop_duplicates('URL',inplace=True)
+    g_vendors.to_excel(writer, index=False)
+    writer.save()
+    writer.close()
+    print(f"Found {len(g_vendors.index)} products TOTAL !!\nSaved data at {out_dir}/all_vendors.xlsx\n")
+    
+
     return 0
 
 

@@ -17,7 +17,8 @@ def ExtractProducts(base_url, category, out_dir='./out', log_dir=None):
         old_stdout = sys.stdout
         log_file = open(log_dir + "extractProducts.log", "a")
         sys.stdout = log_file
-    print(category)
+
+    
     category_name       = category.Name
     category_url        = category.URL
     category_s_industry = category.Industry # Tuple = [Index, URL, Industry, Name]
