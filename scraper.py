@@ -29,7 +29,7 @@ def scrape(base_url,out_dir='./out',log_dir=None):
     g_products = pd.DataFrame(columns={'Name','URL','subCategory','Category','Industry'})
     for category in g_categories.itertuples():
         products  = ExtractProducts(base_url, category)
-        g_product = g_products.append(products,ignore_index=True,sort=False)
+        g_products = g_products.append(products,ignore_index=True,sort=False)
         print(f'\n\n~~~~~~~~~~\n{i*100/cat_found}% of categories scanned\n~~~~~~~~~~~~~~\n\n')
         i += 1
 
