@@ -18,9 +18,9 @@ def ExtractVendors(base_url,product,out_dir='./out',log_dir=None):
 
     prod_name   = product[1] # Product is a tuple : [Index, Name, URL, subCategory, Category, Industry]
     prod_url    = product[2]
-    prod_subCat = product[4]
-    prod_cat    = product[5]
-    prod_indus  = product[6]
+    prod_subCat = product[3]
+    prod_cat    = product[4]
+    prod_indus  = product[5]
 
     # Query the URL for its html
     prod_page = urllib.request.urlopen(prod_url)

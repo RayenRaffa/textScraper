@@ -18,9 +18,9 @@ def ExtractProducts(base_url, category, out_dir='./out', log_dir=None):
         log_file = open(log_dir + "extractProducts.log", "a")
         sys.stdout = log_file
 
-    category_name       = category[1].strip()
-    category_url        = category[2].strip()
-    category_s_industry = category[3].strip()  # Tuple = [Index, Name, URL, Industry]
+    category_name       = category[1]
+    category_url        = category[2]
+    category_s_industry = category[3]  # Tuple = [Index, Name, URL, Industry]
     cat_out_dir = out_dir + '/' + category_s_industry + '/' + category_name
     try:
         category_page = urllib.request.urlopen(category_url)
@@ -33,7 +33,7 @@ def ExtractProducts(base_url, category, out_dir='./out', log_dir=None):
         category_box = []
 
     subCategories = pd.DataFrame(columns=['Name','URL','Category','Industry'])
-    products = pd.DataFrame(columns=['Name','URL','Availabel SKUs','subCategory','Category','Industry'])
+    products = pd.DataFrame(columns=['Name','URL','subCategory','Category','Industry'])
 
     for cat in category_box:
         try:
@@ -70,17 +70,14 @@ def ExtractProducts(base_url, category, out_dir='./out', log_dir=None):
                     prod_soup = prod_box.find('a', href=True)
                     prod_url  = base_url + prod_soup['href']
                     prod_name = prod_soup.getText().strip()
-                    prod_sku_number = prod_box.find('span').getText().strip(')(')
                     products_per_subCat = products_per_subCat.append({'Name':prod_name,
                                                 'URL':prod_url,
-                                                'Available SKUs':prod_sku_number,
                                                 'subCategory': subCategory_name,
                                                 'Category':category_name,
                                                 'Industry':category_s_industry},
                                                 ignore_index=True, sort=False)
                     products = products.append({'Name':prod_name,
                                                 'URL':prod_url,
-                                                'Available SKUs':prod_sku_number,
                                                 'subCategory': subCategory_name,
                                                 'Category':category_name,
                                                 'Industry':category_s_industry},

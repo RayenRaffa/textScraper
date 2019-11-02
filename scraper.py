@@ -18,19 +18,24 @@ base_url = 'https://dir.indiamart.com'
 def scrape(base_url,out_dir='./out',log_dir=None):
 
     industries = ExtractIndustries(base_url)
+    g_categories = pd.DataFrame(columns={'Name','URL','Industry'})
     for industry in industries.itertuples():
         categories = ExtractCategories(base_url, industry)
-    for category in categories.itertuples():
+        g_categories = g_categories.append(categories,ignore_index=True,sort=False)
+    
+    g_products = pd.DataFrame(columns={'Name','URL','subCategory','Category','Industry'})
+    for category in g_categories.itertuples():
         products   = ExtractProducts(base_url, category)
+        g_product = g_products.append(products,ignore_index=True,sort=False)
 
-    prod_found = len(products.index)
+    prod_found = len(g_products.index)
     print(f"##########\n#########\n\
         Found {prod_found} products TOTAL\n\
         Fetching vendors ...\n\
         ##############\n\
         ##############\n")
     i=1
-    for product in products.itertuples():
+    for product in g_products.itertuples():
         vendors    = ExtractVendors(base_url, product)
         print(f'~~~~~~~~~~\n{i*100/prod_found}\n~~~~~~~~~~~~~~\n')
         i += 1
