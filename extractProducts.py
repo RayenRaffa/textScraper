@@ -17,9 +17,9 @@ def ExtractProducts(base_url, category, out_dir='./out', log_dir=None):
         old_stdout = sys.stdout
         log_file = open(log_dir + "extractProducts.log", "a")
         sys.stdout = log_file
-
+    print(category)
     category_name       = category[1]
-    category_url        = category[2]
+    category_url        = category[2].strip('\'')
     category_s_industry = category[3]  # Tuple = [Index, Name, URL, Industry]
     cat_out_dir = out_dir + '/' + category_s_industry + '/' + category_name
     try:
@@ -27,13 +27,13 @@ def ExtractProducts(base_url, category, out_dir='./out', log_dir=None):
         category_soup = BeautifulSoup(category_page, 'html.parser')
         category_box = category_soup.find_all(
             'section', attrs={'class': 'ctgry'})
+        subCategories = pd.DataFrame(columns=['Name','URL','Category','Industry'])
+        products = pd.DataFrame(columns=['Name','URL','subCategory','Category','Industry'])
     except Exception as e:
         print(
             f"++++++++++++++++++++++ WARNING : {e} : Skipping cat {category_url}")
         category_box = []
 
-    subCategories = pd.DataFrame(columns=['Name','URL','Category','Industry'])
-    products = pd.DataFrame(columns=['Name','URL','subCategory','Category','Industry'])
 
     for cat in category_box:
         try:
