@@ -57,7 +57,7 @@ def ExtractCategories(base_url,industry,out_dir='./out',log_dir=None):
                     cat_tag = cat.find('a', href=True)
                     cat_name = cat_tag.getText().strip()
                     cat_url = base_url+cat_tag['href']
-                    print(f"Found category {cat_name} : appending ...")
+                    #print(f"Found category {cat_name} : appending ...")
                     categories = categories.append({"Name":cat_name, "URL":cat_url,"Industry":industry_name}, ignore_index=True, sort=False)
                 except Exception as e:
                     print(f"Error fetching category url from cat_tag : SKIPPING : {e}")

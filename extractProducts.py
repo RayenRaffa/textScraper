@@ -29,7 +29,7 @@ def ExtractProducts(base_url, category, out_dir='./out', log_dir=None):
             'section', attrs={'class': 'ctgry'})
     except Exception as e:
         print(
-            f"++++++++++++++++++++++ WARNING : {e} : Skipping cat {category_nurl}")
+            f"++++++++++++++++++++++ WARNING : {e} : Skipping cat {category_url}")
         category_box = []
 
     subCategories = pd.DataFrame(columns=['Name','URL','Category','Industry'])
