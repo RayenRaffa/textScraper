@@ -29,15 +29,11 @@ def scrape(base_url,out_dir='./out',log_dir=None):
         g_product = g_products.append(products,ignore_index=True,sort=False)
 
     prod_found = len(g_products.index)
-    print(f"##########\n#########\n\
-        Found {prod_found} products TOTAL\n\
-        Fetching vendors ...\n\
-        ##############\n\
-        ##############\n")
+    print(f"##########\n#########\nFound {prod_found} products TOTAL\nFetching vendors ...\n##############\n##############\n")
     i=1
     for product in g_products.itertuples():
         vendors    = ExtractVendors(base_url, product)
-        print(f'~~~~~~~~~~\n{i*100/prod_found}\n~~~~~~~~~~~~~~\n')
+        print(f'\n~~~~~~~~~~\n{i*100/prod_found}\n~~~~~~~~~~~~~~\n')
         i += 1
     return 0
 
