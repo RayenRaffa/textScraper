@@ -14,19 +14,26 @@ from postProcess import PostProcess
 
 
 base_url = 'https://dir.indiamart.com'
-final_output = './out'
-
 
 def scrape(base_url,out_dir='./out',log_dir=None):
 
     industries = ExtractIndustries(base_url)
-    categories = ExtractCategories(industries,categories)
-    sellers = ExtractProducts(sellers,categories,base_url)
-    print(f"\nFound {len(categories.index)} categories TOTAL !")
-    print(categories.iloc[:10,:])
-    print(f"\nFound {len(sellers.index)} sellers TOTAL !")
+    for industry in industries.itertuples():
+            categories = ExtractCategories(base_url, industry)
+            break
+    for category in categories.itertuples():
+            products   = ExtractProducts(base_url, category)
+            break
+    for product in products.itertuples():
+            vendors    = ExtractVendors(base_url, product)
+            break # Testing : run the loop once only
 
-    return sellers, categories, industries
+
+    return 0
+
+
+
+scrape(base_url)
 
 
 # categories = pd.DataFrame(columns={'Name', 'URL','Industry'})

@@ -16,23 +16,24 @@ def ExtractVendors(base_url,product,out_dir='./out',log_dir=None):
         old_stdout = sys.stdout
         sys.stdout = log_file
 
-    prod_name   = product[1].strip() # Product is a tuple : [Index, Name, URL, subCategory, Category, Industry]
-    prod_url    = product[2].strip()
-    prod_subCat = product[3].strip()
-    prod_cat    = product[4].strip()
-    prod_indus  = product[5].strip()
+    prod_name   = product[1] # Product is a tuple : [Index, Name, URL, subCategory, Category, Industry]
+    prod_url    = product[2]
+    prod_subCat = product[4]
+    prod_cat    = product[5]
+    prod_indus  = product[6]
 
     # Query the URL for its html
     prod_page = urllib.request.urlopen(prod_url)
 
     # Parsing the URL page into BeautifulSoup format
-    prod_soup = BeautifulSoup(page, 'html.parser')
+    prod_soup = BeautifulSoup(prod_page, 'html.parser')
 
     # Extracting vendor box from the webpage
     vendor_list = prod_soup.find('ul', attrs={'id': 'm'})
-    vendors = vendor_list.find_all('li', attrs={'id': re.compile('LST')})
+    vendors_box = vendor_list.find_all('li', attrs={'id': re.compile('LST')})
+    vendors = pd.DataFrame(columns={'Name','URL','Phone','Address','Category','Industry'})
 
-    for vendor_box in vendors:
+    for vendor_box in vendors_box:
         try:
             vendor_info_box = vendor_box.find(
                 'div', attrs={'class': 'r-cl b-gry'})
@@ -53,24 +54,25 @@ def ExtractVendors(base_url,product,out_dir='./out',log_dir=None):
                                       'Address': vendor_address,
                                       'Category': prod_cat,
                                       'Industry': prod_indus},
-                                     ignore_index=True)
+                                     ignore_index=True, sort=False)
         except Exception as e:
-            print(f"!!!!!!!!!!!!!  Error fetching vendor data\n{e} .. SKIPPING ...")
+            print(f"\n!!!!!!!!!!!!!  Error fetching vendor data\n{e} .. SKIPPING ...\n")
 
     if (len(vendors.index) > 0):
         vendors.sort_values('Name', inplace=True)
         vendors.drop_duplicates('URL', inplace=True)
-        print(f'Found : {len(vendors.index)}  vendors in {prod_name} .. creating file ...')
+        vendors = vendors[['Name','URL','Phone','Address','Category','Industry']]
+        print(f'\nFound : {len(vendors.index)}  vendors in {prod_name} .. creating file ...\n')
         prod_out_dir = out_dir + '/' + prod_indus + '/' + prod_cat + '/' + prod_subCat
-        vendors_file = prod_out_dir + '/' + prod_name + '.xlsx'
+        vendors_file = prod_out_dir + '/vendors_' + prod_name + '.xlsx'
         if not os.path.exists(prod_out_dir):
             os.makedirs(prod_out_dir)
         writer = ExcelWriter(vendors_file) # TO DO : adapt script to write multiple sheets per file, one industry per file
-        vendors.to_excel(writer, startrow = writer.sheets['Sheet1'].max_row, index=False)
+        vendors.to_excel(writer, index=False)
         writer.save()
         writer.close()
     else:
-        print(f"No vendors found at {prod_url} : SKIPPING ..")
+        print(f"\nNo vendors found at {prod_url} : SKIPPING ..\n")
 
     if(log_dir):
         sys.stdout = old_stdout

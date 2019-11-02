@@ -51,62 +51,70 @@ def ExtractProducts(base_url, category, out_dir='./out', log_dir=None):
                 subCategories    = subCategories.append({'Name':subCategory_name,
                                                             'URL':subCategory_url,
                                                             'Category':category_name,
-                                                            'Industry':category_s_industry})
+                                                            'Industry':category_s_industry},
+                                                            ignore_index=True, sort=False)
             except Exception as e:
                 print(f"Error fetching subCategory data\n{e}\nProceeding to products in subCategory")
                 subCategory_name = 'Other products'
 
             subCat_out_dir = cat_out_dir + '/' + subCategory_name
+            products_box = []
             try:
-                products_box = subCategory_box.find_all('div', attrs={'class':'lik'})
+                prod = subCategory.find_all('div', attrs={'class':'lik'}, recursive=True)
+                products_box.extend(prod)
             except Exception as e:
-                print(f"Error fetching products from subCategory\n{e}\n SKIPPINg ...")
-                products_box = []
+                print(f"\n\nError fetching products from {subCategory_name}\n{e}\n SKIPPINg ...")
 
             for prod_box in products_box:
                 try:
-                    prod_soup = prod_box.find('a', href=true)
+                    prod_soup = prod_box.find('a', href=True)
                     prod_url  = base_url + prod_soup['href']
                     prod_name = prod_soup.getText().strip()
                     prod_sku_number = prod_box.find('span').getText().strip(')(')
-                    data = pd.DataFrame({'Name':prod_name,
+                    products_per_subCat = products_per_subCat.append({'Name':prod_name,
                                                 'URL':prod_url,
                                                 'Available SKUs':prod_sku_number,
                                                 'subCategory': subCategory_name,
                                                 'Category':category_name,
-                                                'Industry':category_s_industry})
-                    products_per_subCat = products_per_subCat.append(data,ignore_index=True)
-                    products = products.append(data, ignore_index=True)
+                                                'Industry':category_s_industry},
+                                                ignore_index=True, sort=False)
+                    products = products.append({'Name':prod_name,
+                                                'URL':prod_url,
+                                                'Available SKUs':prod_sku_number,
+                                                'subCategory': subCategory_name,
+                                                'Category':category_name,
+                                                'Industry':category_s_industry},
+                                                ignore_index=True, sort=False)
                 except Exception as e:
-                    print(f"Error fetching product from {subCategory_name}\n{e} : SKIPPING ..")
+                    print(f"Error fetching product from {subCategory_name}\n{e} : SKIPPING ..\n")
                 
-                if not os.path.exists(subCat_out_dir):
-                    os.makedirs(subCat_out_dir)
-                writer = ExcelWriter(subCat_out_dir + '/products.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
-                products_per_subCat.to_excel(writer,startrow = writer.sheets['Sheet1'].max_row, index=False)
-                writer.save()
-                writer.close()
-                print(f"\nSaved products of {subCategory_name} data at {subCat_out_dir}/products.xlsx")
+            if not os.path.exists(subCat_out_dir):
+                os.makedirs(subCat_out_dir)
+            writer = ExcelWriter(subCat_out_dir + '/products.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
+            products_per_subCat.to_excel(writer, index=False)
+            writer.save()
+            writer.close()
+            print(f"Saved products of {subCategory_name} data at {subCat_out_dir}/products.xlsx\n")
         
         if not os.path.exists(cat_out_dir):
             os.makedirs(cat_out_dir)
         writer = ExcelWriter(cat_out_dir + '/subCategories.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
         subCategories.sort_values('Name',inplace=True)
         subCategories.drop_duplicates('URL',inplace=True)
-        subCategories.to_excel(writer,startrow = writer.sheets['Sheet1'].max_row, index=False)
+        subCategories.to_excel(writer, index=False)
         writer.save()
         writer.close()
         print(f"Found {len(subCategories.index)} subCategories TOTAL in category : {category_name}\nSaved data at {cat_out_dir}/subCategories.xlsx")
 
 
-        writer = ExcelWriter(cat_out_dir + '/products.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
-        products = products.append(subCategories, ignore_index=True)
+        writer = ExcelWriter(cat_out_dir + '/all_products.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
+        products = products.append(subCategories, ignore_index=True, sort=False)
         products.sort_values('Name',inplace=True)
         products.drop_duplicates('URL',inplace=True)
-        products.to_excel(writer,startrow = writer.sheets['Sheet1'].max_row, index=False)
+        products.to_excel(writer, index=False)
         writer.save()
         writer.close()
-        print(f"Found {len(products.index)} products TOTAL in category : {category_name}\nSaved data at {cat_out_dir}/products.xlsx")
+        print(f"Found {len(products.index)} products TOTAL in category : {category_name}\nSaved data at {cat_out_dir}/all_products.xlsx\n")
 
 
 

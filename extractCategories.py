@@ -25,7 +25,7 @@ def ExtractCategories(base_url,industry,out_dir='./out',log_dir=None):
 
     industry_name = industry[1]
     industry_url = industry[2] # industry is a tuple : [Index, Name, URL]
-    print(f"Fetching categories from {industry_name} ...")
+    print(f"\n\n######## Fetching categories from {industry_name} ...\n\n")
     try:
         industry_page = urllib.request.urlopen(industry_url)
         industry_soup = BeautifulSoup(industry_page, 'html.parser')
@@ -58,7 +58,7 @@ def ExtractCategories(base_url,industry,out_dir='./out',log_dir=None):
                     cat_name = cat_tag.getText().strip()
                     cat_url = base_url+cat_tag['href']
                     print(f"Found category {cat_name} : appending ...")
-                    categories = categories.append({"Name":cat_name, "URL":cat_url,"Industry":industry_name}, ignore_index=True)
+                    categories = categories.append({"Name":cat_name, "URL":cat_url,"Industry":industry_name}, ignore_index=True, sort=False)
                 except Exception as e:
                     print(f"Error fetching category url from cat_tag : SKIPPING : {e}")
     
@@ -75,13 +75,13 @@ def ExtractCategories(base_url,industry,out_dir='./out',log_dir=None):
         if not os.path.exists(industry_dir):
             os.makedirs(industry_dir)
         writer = ExcelWriter(industry_dir + '/categories.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
-        categories.to_excel(writer,startrow = writer.sheets['Sheet1'].max_row, index=False)
+        categories.to_excel(writer, index=False)
         writer.save()
         writer.close()
         print(f"\nSaved Categories of {industry_name} data at {out_dir}/{industry_name}/categories.xlsx")
     except Exception as e:
         print(categories)
-        print(f"{e} \nPlease remove {os.path.dirname(out_dir)} or provide another out_dir")
+        print(f"{e} \nPlease remove {out_dir} or provide another out_dir")
 
 
     if(log_dir):
