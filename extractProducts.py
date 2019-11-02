@@ -18,9 +18,9 @@ def ExtractProducts(base_url, category, out_dir='./out', log_dir=None):
         log_file = open(log_dir + "extractProducts.log", "a")
         sys.stdout = log_file
     print(category)
-    category_name       = category[1]
-    category_url        = category[2].strip('\'')
-    category_s_industry = category[3]  # Tuple = [Index, Name, URL, Industry]
+    category_name       = category[3]
+    category_url        = category[1]
+    category_s_industry = category[2]  # Tuple = [Index, URL, Industry, Name]
     cat_out_dir = out_dir + '/' + category_s_industry + '/' + category_name
     try:
         category_page = urllib.request.urlopen(category_url)
