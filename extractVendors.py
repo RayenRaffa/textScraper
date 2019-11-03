@@ -7,7 +7,7 @@ import urllib.request
 from bs4 import BeautifulSoup
 
 
-def ExtractVendors(base_url,product,out_dir='./out',log_dir=None):
+def ExtractVendors(product,out_dir='./out',log_dir=None):
 
     if(log_dir):
         if not os.path.exists(log_dir):
@@ -42,12 +42,21 @@ def ExtractVendors(base_url,product,out_dir='./out',log_dir=None):
             vendor_url  = vendor_info['href']
             # print(vendor_url.text)
             # print(vendor_url['href'])
-            vendor_number = vendor_info_box.find('div', attrs={'id': re.compile('mobenq')}).getText()
-            vendor_number = vendor_number.strip('cCaAlL')
-            # print(vendor_number)
-            # print(vendor_number.text)
-            vendor_address = vendor_info_box.find('p', attrs={'class': 'sm clg'}).getText().strip()
-            # print(vendor_address.text)
+            try:
+                vendor_number = vendor_info_box.find('div', attrs={'id': re.compile('mobenq')}).getText()
+                vendor_number = vendor_number.strip('cCaAlL')
+                # print(vendor_number)
+                # print(vendor_number.text)
+            except Exception as e:
+                print(f"!! !! Error fetching vendor phone\n{e}\n")
+                vendor_number = 'Not Found'
+            try:
+                vendor_address = vendor_info_box.find('p', attrs={'class': 'sm clg'}).getText().strip()
+                # print(vendor_address.text)
+            except Exception as e:
+                print(f"!! Error fetching vendor address\n{e}\n")
+                vendor_address = 'Not Found'
+
             vendors = vendors.append({'Name': vendor_name,
                                       'URL': vendor_url,
                                       'Phone': vendor_number,
@@ -61,15 +70,16 @@ def ExtractVendors(base_url,product,out_dir='./out',log_dir=None):
     if (len(vendors.index) > 0):
         vendors.sort_values('Name', inplace=True)
         vendors.drop_duplicates('URL', inplace=True)
-        print(f'\nFound : {len(vendors.index)}  vendors in {prod_name} .. creating file ...\n')
+        print(f'\nFound : {len(vendors.index)}  vendors in {prod_name} : creating file ...')
         prod_out_dir = out_dir + '/' + prod_indus + '/' + prod_cat + '/' + prod_subCat
-        vendors_file = prod_out_dir + '/vendors_' + prod_name + '.xlsx'
+        vendors_file = prod_out_dir + '/vendorsOf_' + prod_name + '.xlsx'
         if not os.path.exists(prod_out_dir):
             os.makedirs(prod_out_dir)
         writer = ExcelWriter(vendors_file) # TO DO : adapt script to write multiple sheets per file, one industry per file
         vendors.to_excel(writer, index=False)
         writer.save()
         writer.close()
+        print(f"Saved vendors of {prod_name} at:\n{vendors_file}\n")
     else:
         print(f"\nNo vendors found at {prod_url} : SKIPPING ..\n")
 
@@ -79,3 +89,24 @@ def ExtractVendors(base_url,product,out_dir='./out',log_dir=None):
 
 
     return vendors
+
+
+g_vendors = pd.DataFrame(columns={'Name','URL','Phone','Address','Category','Industry'})
+file_name = './out/all_products.xlsx'
+products = pd.read_excel(file_name)
+i = 1
+for product in products.itertuples():
+    vendors = ExtractVendors(product)
+    g_vendors = g_vendors.append(vendors, ignore_index=False)
+    del vendors
+    print(f"\n\n%%% {i*100/ttl_prods}% of products scanned ..")
+    i += 1
+
+
+g_vendors.sort_values('Name',inplace=True)
+g_vendors.drop_duplicates('URL',inplace=True)
+writer = ExcelWriter('./out/all_vendors.xlsx')
+g_vendors.to_excel(writer, index=False)
+writer.save()
+writer.close()
+print(f"Found {len(g_vendors.index)} distinct vendors !\nRecap file saved at {file_name}\nDONE.")
