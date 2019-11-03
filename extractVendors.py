@@ -95,6 +95,7 @@ g_vendors = pd.DataFrame(columns={'Name','URL','Phone','Address','Category','Ind
 file_name = './out/all_products.xlsx'
 products = pd.read_excel(file_name)
 i = 1
+ttl_prods = len(products.index)
 for product in products.itertuples():
     vendors = ExtractVendors(product)
     g_vendors = g_vendors.append(vendors, ignore_index=False)
