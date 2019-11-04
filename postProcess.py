@@ -32,8 +32,7 @@ def PostProcess(data_dir='./out', log_dir=None):
                 file_name = os.path.join(root, name)
                 print(f"Adding : {name} ..")
                 file_df = pd.read_excel(file_name)
-                agg_data_df = agg_data_df.append(
-    subcat_df, ignore_index=True, sort=False)
+                agg_data_df = agg_data_df.append(file_df, ignore_index=True, sort=False)
 
     agg_data_df.sort_values('Name', inplace=True)
     agg_data_df.drop_duplicates('URL', inplace=True)
@@ -55,6 +54,7 @@ def PostProcess(data_dir='./out', log_dir=None):
         'Address',
         'Category',
          'Industry'])
+    
     del d
 
     try:
@@ -74,9 +74,9 @@ def PostProcess(data_dir='./out', log_dir=None):
          encoding='UTF-8')
     print(f"Recap file saved as CSV at ./out/all_vendors.csv")
 
-   sample_writer = ExcelWriter(data_dir+'sample_vendors.xlsx')
-   sample_vendors_df = all_vendors_df.iloc[0:500,:]
-   try:
+    sample_writer = ExcelWriter(data_dir+'sample_vendors.xlsx')
+    sample_vendors_df = all_vendors_df.iloc[0:500,:]
+    try:
         samplevendors_df.to_excel(sample_writer, index=False, encoding='UTF-8')
         sample_writer.save()
         sample_writer.close()
@@ -93,7 +93,7 @@ def PostProcess(data_dir='./out', log_dir=None):
          encoding='UTF-8')
     print(f"Sample file saved as CSV at ./out/sample_vendors.csv\nDONE")
 
-   if(log_dir):
+    if(log_dir):
         sys.stdout = old_stdout
         log_file.close()
 
