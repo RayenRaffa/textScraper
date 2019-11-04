@@ -123,7 +123,14 @@ for product in products.itertuples():
 g_vendors.sort_values('Name',inplace=True)
 g_vendors.drop_duplicates('URL',inplace=True)
 writer = ExcelWriter('./out/all_vendors.xlsx')
-g_vendors.to_excel(writer, index=False)
-writer.save()
-writer.close()
-print(f"Found {len(g_vendors.index)} distinct vendors !\nRecap file saved at {file_name}\nDONE.")
+try:
+    g_vendors.to_excel(writer, index=False, encoding='UTF-8')
+    writer.save()
+    writer.close()
+    print(f"Found {len(g_vendors.index)} distinct vendors !\nRecap file saved as XLSX at {file_name}")
+except Exception as e:
+    print(f"Error saving recap file as XLSX")
+    writer.close()
+
+g_vendors.to_csv('./out/all_vendors.csv',index=False,sep='|',encoding='UTF-8')
+print(f"Recap file saved as CSV at ./out/all_vendors.csv\nDONE")
