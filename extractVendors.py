@@ -28,6 +28,11 @@ def ExtractVendors(product,out_dir='./out',log_dir=None):
     except Exception as e:
         print(f"Error fetching product URL\n{e}\nSkipping ..")
         prod_page = None
+
+
+    vendors = pd.DataFrame(columns={'Name','URL','Phone','Address','Category','Industry'})
+    
+    
     if(prod_page):
         # Parsing the URL page into BeautifulSoup format
         prod_soup = BeautifulSoup(prod_page, 'html.parser')
@@ -35,7 +40,6 @@ def ExtractVendors(product,out_dir='./out',log_dir=None):
         # Extracting vendor box from the webpage
         vendor_list = prod_soup.find('ul', attrs={'id': 'm'})
         vendors_box = vendor_list.find_all('li', attrs={'id': re.compile('LST')})
-        vendors = pd.DataFrame(columns={'Name','URL','Phone','Address','Category','Industry'})
 
         for vendor_box in vendors_box:
             try:
@@ -80,10 +84,15 @@ def ExtractVendors(product,out_dir='./out',log_dir=None):
             if not os.path.exists(prod_out_dir):
                 os.makedirs(prod_out_dir)
             writer = ExcelWriter(vendors_file) # TO DO : adapt script to write multiple sheets per file, one industry per file
-            vendors.to_excel(writer, index=False)
-            writer.save()
-            writer.close()
-            print(f"Saved vendors of {prod_name} at:\n{vendors_file}\n")
+            try:
+                vendors.to_excel(writer, index=False)
+                writer.save()
+                print(f"Saved vendors of {prod_name} at:\n{vendors_file}\n")
+                writer.close()
+            except Exception as e:
+                print(f"\n***** Error saving to {vendors_file}\n{e}\nSkipping ..")
+                del writer
+        
         else:
             print(f"\nNo vendors found at {prod_url} : SKIPPING ..\n")
         
@@ -101,10 +110,13 @@ products = pd.read_excel(file_name)
 i = 1
 ttl_prods = len(products.index)
 for product in products.itertuples():
-    vendors = ExtractVendors(product)
-    g_vendors = g_vendors.append(vendors, ignore_index=False)
-    del vendors
-    print(f"\n\n%%% {i*100/ttl_prods}% of products scanned ..")
+    if i < 17175:
+        print("Skipping scraped product URL...")
+    else:
+        vendors = ExtractVendors(product)
+        g_vendors = g_vendors.append(vendors, ignore_index=False)
+        del vendors
+        print(f"\n\n%%% {i*100/ttl_prods}% of products scanned ..")
     i += 1
 
 
