@@ -4,9 +4,9 @@ import pandas as pd
 from pandas import ExcelWriter
 from pandas import ExcelFile
 
-data_dir = './out/'
 
-def PostProcess(data_dir='./out/'):
+
+def PostProcess(data_dir='./out'):
 
     log_dir = './Logs/'
     if not os.path.exists(log_dir):
@@ -56,5 +56,3 @@ def PostProcess(data_dir='./out/'):
     print("PostProcess : DONE.")
     
     return 0
-
-PostProcess()

@@ -6,21 +6,17 @@ from pandas import ExcelWriter
 import urllib.request
 from bs4 import BeautifulSoup
 
-# URL to be scraped
-base_url = 'https://dir.indiamart.com'
-final_output = './out/'
-# industry = final_output + 'Industrial Plants and Machineries/'
 
 
-def ExtractIndustries(base_url=base_url):
 
-	log_dir = './Logs/'
-	if not os.path.exists(log_dir):
-		os.makedirs(log_dir)
+def ExtractIndustries(base_url,out_dir='./out',log_dir=None):
 
-	old_stdout = sys.stdout
-	log_file = open(log_dir+"extractIndustries.log","w")
-	sys.stdout = log_file
+	if (log_dir):
+		if not os.path.exists(log_dir):
+			os.makedirs(log_dir)
+		old_stdout = sys.stdout
+		log_file = open(os.path.abspath(log_dir)+"/extractIndustries.log","a")
+		sys.stdout = log_file
 
 	industries = pd.DataFrame(columns=['Name','URL'])
 	try:
@@ -41,26 +37,42 @@ def ExtractIndustries(base_url=base_url):
 				industy_link = industry.find('a',href=True)
 				industry_url = 'https:' + industy_link['href']
 				industry_name = industry.find('div',attrs={'class':'catHd'}).getText().strip()
+				industries = industries.append({"Name":industry_name, "URL":industry_url}, ignore_index=True, sort=False)
 			except Exception as e:
 				if(industry_url):
-					print(f"Error fetching industry name from {industry_url} : {e}")
+					print(f"Warning could not fetch industry name from {industry_url} : {e} : IMPOROV_MODE_ACTIVATED")
 					industry_name = industry_url[1:].split('.')[0]
+					industries = industries.append({"Name":industry_name, "URL":industry_url}, ignore_index=True, sort=False)
 				else:
 					print(f"Error fetching industry URL : {e} : SKIPPING ...")
-					industry_url = None
-			if(industry_url):
-				new_indus = pd.DataFrame({"Name":[industry_name], "URL":[industry_url]})
-				print(new_indus)
-				industries = industries.append(new_indus, ignore_index=True)
 
-	sys.stdout = old_stdout
-	log_file.close()
+
+	industries.sort_values('Name',inplace=True)
+	industries.drop_duplicates('URL', inplace=True)
+	try:
+		if not os.path.exists(out_dir):
+			os.makedirs(out_dir)
+		writer = ExcelWriter(os.path.abspath(out_dir) + '/all_industries.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
+		industries.to_excel(writer, index=False)
+		writer.save()
+		writer.close()
+		print(f"\nSaved Industries data at {os.path.dirname(out_dir)}/all_industries.xlsx")
+	except Exception as e:
+		print(industries)
+		print(f"{e} \nPlease remove {os.path.dirname(out_dir)} or provide another out_dir")
+
+	if(log_dir):
+		sys.stdout = old_stdout
+		log_file.close()
 	
-	print(f"\nDONE : Found {len(industries.index)} industries")
+	print(f"\nDONE : Collected {len(industries.index)} industries TOTAL !")
 	
 
 	return industries
 
-industries = ExtractIndustries()
-print(f"\nDONE : Found {len(industries.index)} industries")
-print(industries.iloc[:10,:])
+
+
+
+# base_url = 'https://dir.indiamart.com'
+
+# industries = ExtractIndustries(base_url)

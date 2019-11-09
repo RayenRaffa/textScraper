@@ -7,139 +7,134 @@ import urllib.request
 from bs4 import BeautifulSoup
 
 
-base_url = 'https://dir.indiamart.com'
 
 
-def ExtractProducts(sellers,categories, base_url=base_url, output='./out/'):
+def ExtractProducts(base_url, category, out_dir='./out', log_dir=None):
+
+    if(log_dir):
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+        old_stdout = sys.stdout
+        log_file = open(log_dir + "extractProducts.log", "a")
+        sys.stdout = log_file
+
+    
+    category_name       = category.Name
+    category_url        = category.URL
+    category_s_industry = category.Industry # Tuple = [Index, URL, Industry, Name]
+    cat_out_dir = out_dir + '/' + category_s_industry + '/' + category_name
+    try:
+        category_page = urllib.request.urlopen(category_url)
+        category_soup = BeautifulSoup(category_page, 'html.parser')
+        category_box = category_soup.find_all(
+            'section', attrs={'class': 'ctgry'})
+    except Exception as e:
+        print(
+            f"++++++++++++++++++++++ WARNING : {e} : Skipping cat {category_url}")
+        category_box = []
 
 
-    log_dir = './Logs/'
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-
-    old_stdout = sys.stdout
-    log_file = open(log_dir+"extractProducts.log","w")
-    sys.stdout = log_file
-
-
-    per_indus_count = 0
-    missing_urls = 0
-    missing_addresses = 0
-
-    for i in range(len(categories.index)):
-        row = categories.iloc[i]
-        category = row['URL']
-        category_name = row['Name']
-        category_s_industry = row['Industry']
-        out_dir = output + category_s_industry + '/' + category_name + '/'
-        out_dir_exists = False
+    subCategories = pd.DataFrame(columns=['Name','URL','Category','Industry'])
+    products = pd.DataFrame(columns=['Name','URL','subCategory','Category','Industry'])
+    for cat in category_box:
         try:
-            category_page = urllib.request.urlopen(base_url + category)
-            category_soup = BeautifulSoup(category_page, 'html.parser')
-            category_list = category_soup.find('section', attrs={'class': 'ctgry'})
+           	subCategory_box = cat.find_all('li', attrs={'class': 'box'})
         except Exception as e:
-            print(
-                f"++++++++++++++++++++++ WARNING : {e} : Skipping cat {category}")
-            category_list = None
+            print(f"Error fetching subCategory_box from {category_name} ... Skipping")
+            subCategory_box = []
 
-        if (category_list):		    	
-            per_cat_count = 0
+        for subCategory in subCategory_box:
+            products_per_subCat = pd.DataFrame(columns=['Name', 'URL','Available SKUs','subCategory','Category','Industry'])
             try:
-            	products = category_list.find_all('a', attrs={'class': 'GNTitle title'})
+                subCategory_soup = subCategory.find('a', attrs={'class':'GNTitle title'})
+                subCategory_name = subCategory_soup.getText().strip()
+                subCategory_url  = base_url + subCategory_soup['href']
+                subCategories    = subCategories.append({'Name':subCategory_name,
+                                                            'URL':subCategory_url,
+                                                            'Category':category_name,
+                                                            'Industry':category_s_industry},
+                                                            ignore_index=True, sort=False)
             except Exception as e:
-            	print(f"============= Error fetching products from {category} ... Skipping")
-            	products = []
+                print(f"Error fetching subCategory data\n{e}\nProceeding to products in subCategory")
+                subCategory_name = 'Other products'
 
-        	# for c in products: # Production loop
-            for c in [products[0]]: # Testing : fetch one seller from each product page
-                query = c['href']
+            subCat_out_dir = cat_out_dir + '/' + subCategory_name
+            products_box = []
+            try:
+                prod = subCategory.find_all('div', attrs={'class':'lik'}, recursive=True)
+                products_box.extend(prod)
+            except Exception as e:
+                print(f"\n\nError fetching products from {subCategory_name}\n{e}\n SKIPPINg ...")
 
-                url = base_url + query
-
-                # Query the URL for its html
-                page = urllib.request.urlopen(url)
-
-                # Parsing the URL page into BeautifulSoup format
-                soup = BeautifulSoup(page, 'html.parser')
-
-                # Extracting vendor box from the webpage
-                vendor_list = soup.find('ul', attrs={'id': 'm'})
-                vendors = vendor_list.find_all('li', attrs={'id': re.compile('LST')})
-
-                for vendor_box in vendors:
-                    try:
-                        vendor_info_box = vendor_box.find(
-                            'div', attrs={'class': 'r-cl b-gry'})
-                        vendor_url = vendor_info_box.find('a')
-                        # print(vendor_url.text)
-                        # print(vendor_url['href'])
-                        vendor_number = vendor_info_box.find(
-                            'div', attrs={'id': re.compile('mobenq')}).getText()
-                        vendor_number = vendor_number[4:]
-                        vendor_number.strip()
-                        # print(vendor_number)
-                        # print(vendor_number.text)
-                        vendor_address = vendor_info_box.find(
-                            'p', attrs={'class': 'sm clg'})
-                        # print(vendor_address.text)
-                        seller_url = vendor_url.text
-                    except Exception as e:
-                        print(
-                            f"!!!!!!!!!!!!! WARNING : Error fetching data: {e} !!!!!!!!!!!!!!")
-                        missing_urls += 1
-                        seller_url = None
-
-                    try:
-                        seller_address = vendor_address.text.strip()
-                    except Exception as e:
-                        print(
-                            f"00000000000 Warning : Seller Address not found {e} 00000000000")
-                        missing_addresses += 1
-                        seller_address = "Missing"
-                    if (seller_url):
-                        sellers = sellers.append({'Name': seller_url,
-                                                  'URL': vendor_url['href'],
-                                                  'Phone': vendor_number,
-                                                  'Address': seller_address,
-                                                  'Category': category_name,
-                                                  'Industry': category_s_industry},
-                                                 ignore_index=True)
+            for prod_box in products_box:
+                try:
+                    prod_soup = prod_box.find('a', href=True)
+                    prod_url  = base_url + prod_soup['href']
+                    prod_name = prod_soup.getText().strip()
+                    products_per_subCat = products_per_subCat.append({'Name':prod_name,
+                                                'URL':prod_url,
+                                                'subCategory': subCategory_name,
+                                                'Category':category_name,
+                                                'Industry':category_s_industry},
+                                                ignore_index=True, sort=False)
+                    products = products.append({'Name':prod_name,
+                                                'URL':prod_url,
+                                                'subCategory': subCategory_name,
+                                                'Category':category_name,
+                                                'Industry':category_s_industry},
+                                                ignore_index=True, sort=False)
+                except Exception as e:
+                    print(f"Error fetching product from {subCategory_name}\n{e} : SKIPPING ..\n")
+                
+            if not os.path.exists(subCat_out_dir):
+                os.makedirs(subCat_out_dir)
+            writer = ExcelWriter(subCat_out_dir + '/products.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
+            products_per_subCat.to_excel(writer, index=False)
+            writer.save()
+            writer.close()
+            print(f"Saved products of {subCategory_name} data at {subCat_out_dir}/products.xlsx\n")
+        
+        if not os.path.exists(cat_out_dir):
+            os.makedirs(cat_out_dir)
+        writer = ExcelWriter(cat_out_dir + '/subCategories.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
+        subCategories.sort_values('Name',inplace=True)
+        subCategories.drop_duplicates('URL',inplace=True)
+        subCategories.to_excel(writer, index=False)
+        writer.save()
+        writer.close()
+        print(f"Found {len(subCategories.index)} subCategories TOTAL in category : {category_name}\nSaved data at {cat_out_dir}/subCategories.xlsx")
 
 
-                print(f'--------------------------------------- Found : {len(sellers.index)}  Results so far ----- ')
-                per_cat_count += len(sellers.index)
-                per_indus_count += len(sellers.index)
-                sheet = c.text
-                print(f"Sheet name : {sheet}")
-                if not out_dir_exists:
-                	os.makedirs(out_dir)
-                	out_dir_exists = True
-
-                writer = ExcelWriter(out_dir + sheet + '.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
-                sellers.to_excel(writer, sheet_name=sheet)
-                writer.save()
-                writer.close()
-        else:
-        	print(f"Error fetching {category} ... SKIPPING")
-    print(f"\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Found : {len(sellers.index)} Results TOTAL !  ~~~~~~~~~~~~~~~~~~~~~~~~~")
-    print(str(missing_urls) + " missings urls.")
-    print(str(missing_addresses) + " missing addresses")
-
-    sys.stdout = old_stdout
-    log_file.close()
-
-    return sellers
+        writer = ExcelWriter(cat_out_dir + '/all_products.xlsx') # TO DO : adapt script to write multiple sheets per file, one industry per file
+        products = products.append(subCategories, ignore_index=True, sort=False)
+        products.sort_values('Name',inplace=True)
+        products.drop_duplicates('URL',inplace=True)
+        products.to_excel(writer, index=False)
+        writer.save()
+        writer.close()
+        print(f"Found {len(products.index)} products TOTAL in category : {category_name}\nSaved data at {cat_out_dir}/all_products.xlsx\n")
 
 
 
-categories = pd.DataFrame(columns=['Name', 'URL','Industry'])
-categories = categories.append({'Name': 'Test CAT',
-								'URL':'/indianexporters/glue.html',
-								'Industry': 'Test Industry'},
-								ignore_index=True)
 
 
-sellers = pd.DataFrame(columns=['Name', 'URL', 'Phone', 'Address','Category','Industry'])
 
-sellers = ExtractProducts(sellers,categories,base_url)
-print(sellers.iloc[:10,:])
+    if(log_dir):
+        sys.stdout = old_stdout
+        log_file.close()
+
+    return products
+
+
+
+# categories = pd.DataFrame(columns=['Name', 'URL','Industry'])
+# categories = categories.append({'Name': 'Test CAT',
+# 								'URL':'/indianexporters/glue.html',
+# 								'Industry': 'Test Industry'},
+# 								ignore_index=True)
+
+
+# sellers = pd.DataFrame(columns=['Name', 'URL', 'Phone', 'Address','Category','Industry'])
+
+# sellers = ExtractProducts(sellers,categories,base_url)
+# print(sellers.iloc[:10,:])
