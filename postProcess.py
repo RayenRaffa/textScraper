@@ -32,8 +32,7 @@ def PostProcess(data_dir='./out', log_dir=None):
                 file_name = os.path.join(root, name)
                 print(f"Adding : {name} ..")
                 file_df = pd.read_excel(file_name)
-                agg_data_df = agg_data_df.append(
-    subcat_df, ignore_index=True, sort=False)
+                agg_data_df = agg_data_df.append(subcat_df, ignore_index=True, sort=False)
 
     agg_data_df.sort_values('Name', inplace=True)
     agg_data_df.drop_duplicates('URL', inplace=True)
